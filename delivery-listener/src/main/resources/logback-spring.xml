@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Active profile switch: 'local' uses human-readable console, all others use JSON -->
+    <springProfile name="local">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{correlationId}] - %msg%n</pattern>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- Default (EKS / production): structured JSON via logstash-logback-encoder -->
+    <springProfile name="!local">
+        <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <providers>
+                    <timestamp/>
+                    <logLevel/>
+                    <loggerName/>
+                    <threadName/>
+                    <message/>
+                    <stackTrace/>
+                    <!-- MDC fields: correlationId, topic, retryStage, partition, offset -->
+                    <mdc/>
+                    <!-- Include caller data for DEBUG level -->
+                    <callerData/>
+                </providers>
+                <!-- Additional static fields -->
+                <customFields>{"service":"delivery-listener"}</customFields>
+                <includeMdcKeyName>correlationId</includeMdcKeyName>
+                <includeMdcKeyName>topic</includeMdcKeyName>
+                <includeMdcKeyName>retryStage</includeMdcKeyName>
+            </encoder>
+        </appender>
+        <root level="INFO">
+            <appender-ref ref="JSON_CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- Suppress noisy framework logs -->
+    <logger name="org.apache.kafka.clients.consumer" level="WARN"/>
+    <logger name="org.apache.kafka.common.utils"     level="WARN"/>
+    <logger name="software.amazon.awssdk"            level="WARN"/>
+    <logger name="reactor.netty"                     level="WARN"/>
+</configuration>

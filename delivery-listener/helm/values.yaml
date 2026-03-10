@@ -1,0 +1,120 @@
+# ============================================================
+# delivery-listener Helm values
+# Override per environment with -f values-prod.yaml
+# ============================================================
+
+replicaCount: 3
+
+image:
+  repository: your-ecr-repo.dkr.ecr.us-east-1.amazonaws.com/delivery-listener
+  tag: "1.0.0"
+  pullPolicy: Always
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: "delivery-listener-sa"
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/delivery-listener-role"
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/actuator/prometheus"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 65
+  targetMemoryUtilizationPercentage: 80
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# ---- AWS ----
+aws:
+  region: "us-east-1"
+
+# ---- DynamoDB ----
+dynamodb:
+  tableName: "glbl-event-subscription"
+  refreshIntervalHours: "24"
+
+# ---- Kafka / MSK ----
+kafka:
+  bootstrapServers: "b-1.mskcluster.kafka.us-east-1.amazonaws.com:9098,b-2.mskcluster.kafka.us-east-1.amazonaws.com:9098"
+  groupId: "delivery-listener-group"
+  consumerConcurrency: "3"
+  maxPollRecords: "50"
+  maxPollIntervalMs: "600000"
+  securityProtocol: "SASL_SSL"
+  saslMechanism: "AWS_MSK_IAM"
+  saslJaasConfig: "software.amazon.msk.auth.iam.IAMLoginModule required;"
+  saslCallbackHandler: "software.amazon.msk.auth.iam.IAMClientCallbackHandler"
+  topicSuffixes:
+    retry1: ".R1"
+    retry2: ".R2"
+    retry3: ".R3"
+    dl:     ".DL"
+
+# ---- Retry ----
+retry:
+  r1: "PT3M"
+  r2: "PT6M"
+  r3: "PT9M"
+  dl: "PT15M"
+  maxNackDuration: "PT30S"
+
+# ---- Webhook ----
+webhook:
+  connectTimeout: "PT5S"
+  readTimeout:    "PT30S"
+  maxConnections: "200"
+
+# ---- Security (values from Kubernetes Secret – never put real values here) ----
+adminUsername: "admin"
+# adminPassword is read from secret; not in values
+
+# ---- Probes ----
+livenessProbe:
+  path: /actuator/health/liveness
+  initialDelaySeconds: 60
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  path: /actuator/health/readiness
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app: delivery-listener

@@ -1,0 +1,243 @@
+{
+  "groups": [
+    {
+      "name": "app",
+      "type": "com.company.deliverylistener.config.properties.AppProperties",
+      "sourceType": "com.company.deliverylistener.config.properties.AppProperties"
+    },
+    {
+      "name": "app.aws",
+      "type": "com.company.deliverylistener.config.properties.AppProperties$Aws",
+      "sourceType": "com.company.deliverylistener.config.properties.AppProperties"
+    },
+    {
+      "name": "app.dynamodb",
+      "type": "com.company.deliverylistener.config.properties.AppProperties$DynamoDb",
+      "sourceType": "com.company.deliverylistener.config.properties.AppProperties"
+    },
+    {
+      "name": "kafka",
+      "type": "com.company.deliverylistener.config.properties.KafkaProperties",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties"
+    },
+    {
+      "name": "kafka.topic-naming",
+      "type": "com.company.deliverylistener.config.properties.KafkaProperties$TopicNaming",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties"
+    },
+    {
+      "name": "retry",
+      "type": "com.company.deliverylistener.config.properties.RetryProperties",
+      "sourceType": "com.company.deliverylistener.config.properties.RetryProperties"
+    },
+    {
+      "name": "retry.delay",
+      "type": "com.company.deliverylistener.config.properties.RetryProperties$Delay",
+      "sourceType": "com.company.deliverylistener.config.properties.RetryProperties"
+    },
+    {
+      "name": "webhook",
+      "type": "com.company.deliverylistener.config.properties.WebhookProperties",
+      "sourceType": "com.company.deliverylistener.config.properties.WebhookProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "app.aws.endpoint-override",
+      "type": "java.lang.String",
+      "description": "Optional endpoint override for local testing (e.g. LocalStack).",
+      "sourceType": "com.company.deliverylistener.config.properties.AppProperties$Aws"
+    },
+    {
+      "name": "app.aws.region",
+      "type": "java.lang.String",
+      "sourceType": "com.company.deliverylistener.config.properties.AppProperties$Aws",
+      "defaultValue": "us-east-1"
+    },
+    {
+      "name": "app.dynamodb.refresh-interval-hours",
+      "type": "java.lang.Integer",
+      "description": "How often the in-memory subscription cache is refreshed (hours).",
+      "sourceType": "com.company.deliverylistener.config.properties.AppProperties$DynamoDb",
+      "defaultValue": 24
+    },
+    {
+      "name": "app.dynamodb.table-name",
+      "type": "java.lang.String",
+      "sourceType": "com.company.deliverylistener.config.properties.AppProperties$DynamoDb",
+      "defaultValue": "glbl-event-subscription"
+    },
+    {
+      "name": "app.service-name",
+      "type": "java.lang.String",
+      "description": "Human-readable service name used in logs and metrics tags.",
+      "sourceType": "com.company.deliverylistener.config.properties.AppProperties",
+      "defaultValue": "delivery-listener"
+    },
+    {
+      "name": "kafka.bootstrap-servers",
+      "type": "java.lang.String",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties",
+      "defaultValue": "localhost:9092"
+    },
+    {
+      "name": "kafka.consumer-concurrency",
+      "type": "java.lang.Integer",
+      "description": "Number of concurrent consumer threads per listener container.",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties",
+      "defaultValue": 3
+    },
+    {
+      "name": "kafka.group-id",
+      "type": "java.lang.String",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties",
+      "defaultValue": "delivery-listener-group"
+    },
+    {
+      "name": "kafka.max-poll-interval-ms",
+      "type": "java.lang.Integer",
+      "description": "Max poll interval (ms) – critical for retry consumers that may park temporarily.",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties",
+      "defaultValue": 600000
+    },
+    {
+      "name": "kafka.max-poll-records",
+      "type": "java.lang.Integer",
+      "description": "Max poll records per consumer poll cycle.",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties",
+      "defaultValue": 50
+    },
+    {
+      "name": "kafka.sasl-callback-handler-class",
+      "type": "java.lang.String",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties",
+      "defaultValue": "software.amazon.msk.auth.iam.IAMClientCallbackHandler"
+    },
+    {
+      "name": "kafka.sasl-jaas-config",
+      "type": "java.lang.String",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties",
+      "defaultValue": "software.amazon.msk.auth.iam.IAMLoginModule required;"
+    },
+    {
+      "name": "kafka.sasl-mechanism",
+      "type": "java.lang.String",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties",
+      "defaultValue": "AWS_MSK_IAM"
+    },
+    {
+      "name": "kafka.security-protocol",
+      "type": "java.lang.String",
+      "description": "Security protocol: PLAINTEXT | SSL | SASL_SSL (MSK uses SASL_SSL in production).",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties",
+      "defaultValue": "SASL_SSL"
+    },
+    {
+      "name": "kafka.topic-naming.dl-suffix",
+      "type": "java.lang.String",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties$TopicNaming",
+      "defaultValue": ".DL"
+    },
+    {
+      "name": "kafka.topic-naming.retry1-suffix",
+      "type": "java.lang.String",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties$TopicNaming",
+      "defaultValue": ".R1"
+    },
+    {
+      "name": "kafka.topic-naming.retry2-suffix",
+      "type": "java.lang.String",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties$TopicNaming",
+      "defaultValue": ".R2"
+    },
+    {
+      "name": "kafka.topic-naming.retry3-suffix",
+      "type": "java.lang.String",
+      "sourceType": "com.company.deliverylistener.config.properties.KafkaProperties$TopicNaming",
+      "defaultValue": ".R3"
+    },
+    {
+      "name": "retry.delay.dl",
+      "type": "java.time.Duration",
+      "description": "Not an additional delay; marks the total window before DL.",
+      "sourceType": "com.company.deliverylistener.config.properties.RetryProperties$Delay",
+      "defaultValue": "15m"
+    },
+    {
+      "name": "retry.delay.r1",
+      "type": "java.time.Duration",
+      "sourceType": "com.company.deliverylistener.config.properties.RetryProperties$Delay",
+      "defaultValue": "3m"
+    },
+    {
+      "name": "retry.delay.r2",
+      "type": "java.time.Duration",
+      "sourceType": "com.company.deliverylistener.config.properties.RetryProperties$Delay",
+      "defaultValue": "6m"
+    },
+    {
+      "name": "retry.delay.r3",
+      "type": "java.time.Duration",
+      "sourceType": "com.company.deliverylistener.config.properties.RetryProperties$Delay",
+      "defaultValue": "9m"
+    },
+    {
+      "name": "retry.max-nack-duration",
+      "type": "java.time.Duration",
+      "description": "Maximum nack park duration per retry-consumer poll cycle to avoid max.poll.interval breach.",
+      "sourceType": "com.company.deliverylistener.config.properties.RetryProperties",
+      "defaultValue": "30s"
+    },
+    {
+      "name": "webhook.connect-timeout",
+      "type": "java.time.Duration",
+      "description": "TCP connection timeout.",
+      "sourceType": "com.company.deliverylistener.config.properties.WebhookProperties",
+      "defaultValue": "5s"
+    },
+    {
+      "name": "webhook.max-connections",
+      "type": "java.lang.Integer",
+      "description": "Maximum connections in the reactor-netty connection pool.",
+      "sourceType": "com.company.deliverylistener.config.properties.WebhookProperties",
+      "defaultValue": 200
+    },
+    {
+      "name": "webhook.max-idle-time",
+      "type": "java.time.Duration",
+      "description": "Maximum idle time before a pooled connection is evicted.",
+      "sourceType": "com.company.deliverylistener.config.properties.WebhookProperties",
+      "defaultValue": "60s"
+    },
+    {
+      "name": "webhook.read-timeout",
+      "type": "java.time.Duration",
+      "description": "Socket \/ read timeout for the entire response.",
+      "sourceType": "com.company.deliverylistener.config.properties.WebhookProperties",
+      "defaultValue": "30s"
+    },
+    {
+      "name": "webhook.retriable-status-codes",
+      "type": "java.util.List<java.lang.Integer>",
+      "description": "HTTP status codes that are considered retriable (in addition to 5xx and timeouts). 429 (Too Many Requests) is included by default.",
+      "sourceType": "com.company.deliverylistener.config.properties.WebhookProperties"
+    },
+    {
+      "name": "webhook.retriable4xx-codes",
+      "type": "java.util.List<java.lang.Integer>",
+      "description": "4xx codes that ARE retriable (e.g., 408 Request Timeout). By default 4xx is non-retriable unless listed here.",
+      "sourceType": "com.company.deliverylistener.config.properties.WebhookProperties"
+    },
+    {
+      "name": "webhook.token-expiry-buffer",
+      "type": "java.time.Duration",
+      "description": "Token endpoint response clock-skew tolerance. Tokens are considered expired {@code tokenExpiryBuffer} before their actual expiry.",
+      "sourceType": "com.company.deliverylistener.config.properties.WebhookProperties",
+      "defaultValue": "30s"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

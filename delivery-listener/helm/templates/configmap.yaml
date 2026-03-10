@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "delivery-listener.fullname" . }}-config
+  labels:
+    {{- include "delivery-listener.labels" . | nindent 4 }}
+data:
+  AWS_REGION: {{ .Values.aws.region | quote }}
+  DYNAMODB_TABLE_NAME: {{ .Values.dynamodb.tableName | quote }}
+  DYNAMODB_REFRESH_HOURS: {{ .Values.dynamodb.refreshIntervalHours | quote }}
+  KAFKA_BOOTSTRAP_SERVERS: {{ .Values.kafka.bootstrapServers | quote }}
+  KAFKA_GROUP_ID: {{ .Values.kafka.groupId | quote }}
+  KAFKA_CONSUMER_CONCURRENCY: {{ .Values.kafka.consumerConcurrency | quote }}
+  KAFKA_MAX_POLL_RECORDS: {{ .Values.kafka.maxPollRecords | quote }}
+  KAFKA_MAX_POLL_INTERVAL_MS: {{ .Values.kafka.maxPollIntervalMs | quote }}
+  KAFKA_SECURITY_PROTOCOL: {{ .Values.kafka.securityProtocol | quote }}
+  KAFKA_SASL_MECHANISM: {{ .Values.kafka.saslMechanism | quote }}
+  KAFKA_SASL_JAAS_CONFIG: {{ .Values.kafka.saslJaasConfig | quote }}
+  KAFKA_SASL_CALLBACK_HANDLER: {{ .Values.kafka.saslCallbackHandler | quote }}
+  KAFKA_TOPIC_RETRY1_SUFFIX: {{ .Values.kafka.topicSuffixes.retry1 | quote }}
+  KAFKA_TOPIC_RETRY2_SUFFIX: {{ .Values.kafka.topicSuffixes.retry2 | quote }}
+  KAFKA_TOPIC_RETRY3_SUFFIX: {{ .Values.kafka.topicSuffixes.retry3 | quote }}
+  KAFKA_TOPIC_DL_SUFFIX: {{ .Values.kafka.topicSuffixes.dl | quote }}
+  RETRY_DELAY_R1: {{ .Values.retry.r1 | quote }}
+  RETRY_DELAY_R2: {{ .Values.retry.r2 | quote }}
+  RETRY_DELAY_R3: {{ .Values.retry.r3 | quote }}
+  RETRY_DELAY_DL: {{ .Values.retry.dl | quote }}
+  RETRY_MAX_NACK_DURATION: {{ .Values.retry.maxNackDuration | quote }}
+  WEBHOOK_CONNECT_TIMEOUT: {{ .Values.webhook.connectTimeout | quote }}
+  WEBHOOK_READ_TIMEOUT: {{ .Values.webhook.readTimeout | quote }}
+  WEBHOOK_MAX_CONNECTIONS: {{ .Values.webhook.maxConnections | quote }}
+  ENVIRONMENT: {{ .Release.Namespace | quote }}

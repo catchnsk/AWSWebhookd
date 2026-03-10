@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: delivery-listener-config
+  namespace: delivery
+  labels:
+    app: delivery-listener
+data:
+  # ---- AWS / DynamoDB ----
+  AWS_REGION: "us-east-1"
+  DYNAMODB_TABLE_NAME: "glbl-event-subscription"
+  DYNAMODB_REFRESH_HOURS: "24"
+
+  # ---- Kafka / MSK ----
+  # MSK Bootstrap servers – update with your cluster endpoints
+  KAFKA_BOOTSTRAP_SERVERS: "b-1.mskcluster.kafka.us-east-1.amazonaws.com:9098,b-2.mskcluster.kafka.us-east-1.amazonaws.com:9098"
+  KAFKA_GROUP_ID: "delivery-listener-group"
+  KAFKA_CONSUMER_CONCURRENCY: "3"
+  KAFKA_MAX_POLL_RECORDS: "50"
+  KAFKA_MAX_POLL_INTERVAL_MS: "600000"
+  KAFKA_SECURITY_PROTOCOL: "SASL_SSL"
+  KAFKA_SASL_MECHANISM: "AWS_MSK_IAM"
+  KAFKA_SASL_JAAS_CONFIG: "software.amazon.msk.auth.iam.IAMLoginModule required;"
+  KAFKA_SASL_CALLBACK_HANDLER: "software.amazon.msk.auth.iam.IAMClientCallbackHandler"
+
+  # ---- Topic suffix naming ----
+  KAFKA_TOPIC_RETRY1_SUFFIX: ".R1"
+  KAFKA_TOPIC_RETRY2_SUFFIX: ".R2"
+  KAFKA_TOPIC_RETRY3_SUFFIX: ".R3"
+  KAFKA_TOPIC_DL_SUFFIX: ".DL"
+
+  # ---- Retry delays ----
+  RETRY_DELAY_R1: "PT3M"
+  RETRY_DELAY_R2: "PT6M"
+  RETRY_DELAY_R3: "PT9M"
+  RETRY_DELAY_DL: "PT15M"
+  RETRY_MAX_NACK_DURATION: "PT30S"
+
+  # ---- Webhook ----
+  WEBHOOK_CONNECT_TIMEOUT: "PT5S"
+  WEBHOOK_READ_TIMEOUT: "PT30S"
+  WEBHOOK_MAX_CONNECTIONS: "200"
+  WEBHOOK_RETRIABLE_4XX: "408,429"
+
+  # ---- Scheduler ----
+  REFRESH_RATE_MS: "86400000"
+  REFRESH_INITIAL_DELAY_MS: "0"
+
+  # ---- Server ----
+  SERVER_PORT: "8080"
+  ENVIRONMENT: "production"

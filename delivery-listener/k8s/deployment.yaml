@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: delivery-listener
+  namespace: delivery
+  labels:
+    app: delivery-listener
+    version: "1.0.0"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: delivery-listener
+  # Rolling update strategy – ensures at least 2 pods stay running during deploys
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: delivery-listener
+      annotations:
+        # Prometheus scraping
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      serviceAccountName: delivery-listener-sa
+      terminationGracePeriodSeconds: 60
+
+      # Security context – drop all capabilities, read-only root filesystem
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+
+      containers:
+        - name: delivery-listener
+          image: your-ecr-repo.dkr.ecr.us-east-1.amazonaws.com/delivery-listener:1.0.0
+          imagePullPolicy: Always
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+          # ---- Resource limits ----
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+
+          # ---- Environment – non-sensitive from ConfigMap ----
+          envFrom:
+            - configMapRef:
+                name: delivery-listener-config
+            - secretRef:
+                name: delivery-listener-secret
+
+          # ---- Explicit env for JVM settings ----
+          env:
+            - name: JAVA_OPTS
+              value: >-
+                -XX:+UseContainerSupport
+                -XX:MaxRAMPercentage=75.0
+                -XX:+UseG1GC
+                -Dspring.profiles.active=default
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+          # ---- Probes ----
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30  # 5 minutes total startup budget
+
+          # ---- Temp volumes for JVM (read-only root filesystem) ----
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: var-tmp
+              mountPath: /var/tmp
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: var-tmp
+          emptyDir: {}
+
+      # Spread pods across AZs for resilience
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: delivery-listener

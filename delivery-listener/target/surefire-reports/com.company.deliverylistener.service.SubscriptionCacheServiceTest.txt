@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.company.deliverylistener.service.SubscriptionCacheServiceTest
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.450 s -- in com.company.deliverylistener.service.SubscriptionCacheServiceTest

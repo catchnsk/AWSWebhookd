@@ -1,0 +1,17 @@
+apiVersion: v2
+name: delivery-listener
+description: >
+  Event Delivery Listener Service – consumes from Amazon MSK and delivers
+  event payloads to subscriber webhook URLs with a staged retry topology.
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - kafka
+  - msk
+  - webhook
+  - event-delivery
+  - dynamodb
+maintainers:
+  - name: Platform Engineering
+    email: platform-eng@company.com

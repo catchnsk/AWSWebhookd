@@ -1,0 +1,42 @@
+app:
+  aws:
+    region: us-east-1
+    endpoint-override: ${LOCALSTACK_ENDPOINT:http://localhost:4566}
+  dynamodb:
+    table-name: glbl-event-subscription
+    refresh-interval-hours: 24
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  group-id: delivery-listener-test-group
+  consumer-concurrency: 1
+  security-protocol: PLAINTEXT
+
+retry:
+  max-nack-duration: PT1S   # Fast nack for tests
+  delay:
+    r1: PT1S
+    r2: PT2S
+    r3: PT3S
+    dl: PT5S
+
+webhook:
+  connect-timeout: PT2S
+  read-timeout:    PT5S
+  token-expiry-buffer: PT5S
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+
+security:
+  admin:
+    username: test
+    password: "{noop}test"
+
+logging:
+  level:
+    com.company.deliverylistener: DEBUG
+    org.springframework.kafka: DEBUG

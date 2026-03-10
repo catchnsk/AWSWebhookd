@@ -1,0 +1,124 @@
+spring:
+  application:
+    name: delivery-listener
+
+# ============================================================
+# Application / AWS / DynamoDB
+# ============================================================
+app:
+  service-name: delivery-listener
+  aws:
+    region: ${AWS_REGION:us-east-1}
+    # Set to http://localhost:4566 for LocalStack integration testing
+    endpoint-override: ${AWS_ENDPOINT_OVERRIDE:}
+  dynamodb:
+    table-name: ${DYNAMODB_TABLE_NAME:glbl-event-subscription}
+    refresh-interval-hours: ${DYNAMODB_REFRESH_HOURS:24}
+
+# ============================================================
+# Kafka / MSK
+# ============================================================
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  group-id: ${KAFKA_GROUP_ID:delivery-listener-group}
+  consumer-concurrency: ${KAFKA_CONSUMER_CONCURRENCY:3}
+  max-poll-records: ${KAFKA_MAX_POLL_RECORDS:50}
+  max-poll-interval-ms: ${KAFKA_MAX_POLL_INTERVAL_MS:600000}
+  # PLAINTEXT for local dev; SASL_SSL for MSK in production
+  security-protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+  sasl-mechanism: ${KAFKA_SASL_MECHANISM:AWS_MSK_IAM}
+  sasl-jaas-config: ${KAFKA_SASL_JAAS_CONFIG:software.amazon.msk.auth.iam.IAMLoginModule required;}
+  sasl-callback-handler-class: ${KAFKA_SASL_CALLBACK_HANDLER:software.amazon.msk.auth.iam.IAMClientCallbackHandler}
+  topic-naming:
+    retry1-suffix: ${KAFKA_TOPIC_RETRY1_SUFFIX:.R1}
+    retry2-suffix: ${KAFKA_TOPIC_RETRY2_SUFFIX:.R2}
+    retry3-suffix: ${KAFKA_TOPIC_RETRY3_SUFFIX:.R3}
+    dl-suffix:     ${KAFKA_TOPIC_DL_SUFFIX:.DL}
+
+# ============================================================
+# Retry delays
+# ============================================================
+retry:
+  max-nack-duration: ${RETRY_MAX_NACK_DURATION:PT30S}
+  delay:
+    r1: ${RETRY_DELAY_R1:PT3M}
+    r2: ${RETRY_DELAY_R2:PT6M}
+    r3: ${RETRY_DELAY_R3:PT9M}
+    dl: ${RETRY_DELAY_DL:PT15M}
+
+# ============================================================
+# Outbound webhook delivery
+# ============================================================
+webhook:
+  connect-timeout: ${WEBHOOK_CONNECT_TIMEOUT:PT5S}
+  read-timeout:    ${WEBHOOK_READ_TIMEOUT:PT30S}
+  max-connections: ${WEBHOOK_MAX_CONNECTIONS:200}
+  max-idle-time:   ${WEBHOOK_MAX_IDLE_TIME:PT60S}
+  retriable4xx-codes: ${WEBHOOK_RETRIABLE_4XX:408,429}
+  token-expiry-buffer: ${WEBHOOK_TOKEN_EXPIRY_BUFFER:PT30S}
+
+# ============================================================
+# Scheduler
+# ============================================================
+scheduling:
+  subscription-refresh:
+    # 24 hours = 86400000 ms
+    fixedRateMs: ${REFRESH_RATE_MS:86400000}
+    initialDelayMs: ${REFRESH_INITIAL_DELAY_MS:0}
+
+# ============================================================
+# Security (admin credentials injected via Kubernetes Secret)
+# ============================================================
+security:
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    # BCrypt-encoded password; {noop}changeme is for local dev ONLY
+    password: ${ADMIN_PASSWORD:{noop}changeme}
+
+# ============================================================
+# Actuator / Management
+# ============================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,loggers,env
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: ${ENVIRONMENT:local}
+
+# ============================================================
+# Logging (structured JSON in production)
+# ============================================================
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    root: INFO
+    com.company.deliverylistener: DEBUG
+    org.springframework.kafka: INFO
+    org.apache.kafka: WARN
+
+# ============================================================
+# Server
+# ============================================================
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 50
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
