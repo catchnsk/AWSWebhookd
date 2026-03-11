@@ -1,5 +1,14 @@
 # Default ignored files
 /shelf/
 /workspace.xml
-.class
-.jar
+# Compiled Java files
+*.class
+
+# JAR files
+*.jar
+
+# Common build directories (optional but recommended)
+target/
+build/
+out/
+bin/
